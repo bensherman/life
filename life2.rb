@@ -1,3 +1,4 @@
+require "byebug"
 require "set"
 
 class Grid
@@ -8,7 +9,7 @@ class Grid
   end
 
   def add_cell(x, y)
-    cells.add({ x: x, y: y })
+    @cells.add({ x: x, y: y })
   end
 
   def neighbors(x, y)
