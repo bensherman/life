@@ -1,6 +1,7 @@
 require "byebug"
 require "set"
 require "gosu"
+require "benchmark"
 
 class Grid
   attr_accessor :cells
@@ -31,18 +32,23 @@ class Grid
     new_grid.cells = cells.dup
 
     checklist = cells.dup
-    cells.each do |cell|
-      checklist += neighbors(cell[:x], cell[:y])
-    end
-
-    checklist.each do |cell|
-      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
-      if live_neighbors < 2 || live_neighbors > 3
-        new_grid.cells.delete cell
-      elsif live_neighbors == 3
-        new_grid.add_cell(cell[:x], cell[:y])
+    puts("checklist generate time: #{Benchmark.measure do
+      cells.each do |cell|
+        checklist += neighbors(cell[:x], cell[:y])
       end
-    end
+    end}")
+
+    puts("checklist size: #{checklist.length}")
+    puts("checklist check time: #{Benchmark.measure do
+                                    checklist.each do |cell|
+                                      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
+                                      if live_neighbors < 2 || live_neighbors > 3
+                                        new_grid.cells.delete cell
+                                      elsif live_neighbors == 3
+                                        new_grid.add_cell(cell[:x], cell[:y])
+                                      end
+                                    end
+                                  end}")
     new_grid
   end
 
@@ -51,53 +57,12 @@ class Grid
   end
 end
 
-class Screen
-  def initialize(width, height)
-    @width = width
-    @height = height
-  end
-
-  def draw(cells)
-    (-@height / 2..@height / 2).each do |y|
-      (-@width / 2..@width / 2).each do |x|
-        c = cells.include?({ x: x, y: y }) ? "*" : " "
-        print c
-      end
-      puts
-    end
-  end
-end
-
-class Ascii
-  def self.ascii_screen
-    height = 25
-    width = 80
-    grid = Grid.new
-    grid.add_cell(0, 0)
-    grid.add_cell(1, 0)
-    grid.add_cell(2, 0)
-    grid.add_cell(2, 10)
-    1000.times do
-      grid.add_cell(rand(-width / 2..width / 2), rand(-height / 2..height / 2))
-    end
-
-    screen = Screen.new(width, height)
-    loop do
-      screen.draw grid.cells
-      puts(grid.cells.length)
-      grid = grid.next
-      sleep 0.01
-    end
-  end
-end
-
 class Game < Gosu::Window
   def initialize
     @pixel_size = 10
     @height = 100
     @width = 100
-    # @options = {update_interval: 500}
-    super @width * @pixel_size, @height * @pixel_size
+    super @width * @pixel_size, @height * @pixel_size, @options = { update_interval: 10 }
     self.caption = "Life"
     @grid = Grid.new
     @grid.add_cell(0, 0)
@@ -115,29 +80,49 @@ class Game < Gosu::Window
     @dead = record(@pixel_size, @pixel_size) do
       draw_rect(0, 0, @pixel_size, @pixel_size, Gosu::Color::BLACK)
     end
-  ends
+  end
+
   def update
-    @alive_cells = []
-    @dead_cells = []
-    @height.times do |y|
-      @width.times do |x|
-        if @grid.cells.include?({ x: x, y: y })
-          @alive_cells.append({ x: x, y: y })
-        else
-          @dead_cells.append({ x: x, y: y })
+    if @adding
+      puts(mouse_x, mouse_y)
+      pixel_x = mouse_x.to_i / @pixel_size
+      pixel_y = mouse_y.to_i / @pixel_size
+      @grid.add_cell pixel_x, pixel_y
+      puts("adding cell at #{pixel_x} #{pixel_y}")
+      @alive_cells.append({ x: pixel_x, y: pixel_y })
+    else
+      puts("cells: #{@grid.cells.length}")
+      @alive_cells = []
+      @dead_cells = []
+      @height.times do |y|
+        @width.times do |x|
+          if @grid.cells.include?({ x: x, y: y })
+            @alive_cells.append({ x: x, y: y })
+          end
         end
       end
+      @grid = @grid.next
     end
-    @grid = @grid.next
   end
 
   def draw
-    puts("#{@alive_cells.length} #{@dead_cells.length}")
+    puts("alive pixels: #{@alive_cells.length} dead pixels: #{@dead_cells.length}")
     @alive_cells.each do |c|
-      @alive.draw c[:x] * 10, c[:y] * 10
+      @alive.draw(c[:x] * 10, c[:y] * 10)
     end
-    @dead_cells.each do |c|
-      @dead.draw c[:x] * 10, c[:y] * 10
+  end
+
+  def button_down(id)
+    case id
+    when Gosu::MS_LEFT
+      @adding = true
+    end
+  end
+
+  def button_up(id)
+    case id
+    when Gosu::MS_LEFT
+      @adding = false
     end
   end
 end
