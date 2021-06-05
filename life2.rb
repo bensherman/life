@@ -32,24 +32,39 @@ class Grid
     new_grid.cells = cells.dup
 
     checklist = cells.dup
-    puts("checklist generate time: #{Benchmark.measure do
-      cells.each do |cell|
-        checklist += neighbors(cell[:x], cell[:y])
-      end
-    end}")
+    cells.each do |cell|
+      checklist += neighbors(cell[:x], cell[:y])
+    end
 
     puts("checklist size: #{checklist.length}")
-    puts("checklist check time: #{Benchmark.measure do
-                                    checklist.each do |cell|
-                                      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
-                                      if live_neighbors < 2 || live_neighbors > 3
-                                        new_grid.cells.delete cell
-                                      elsif live_neighbors == 3
-                                        new_grid.add_cell(cell[:x], cell[:y])
-                                      end
-                                    end
-                                  end}")
+    checklist.each do |cell|
+      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
+      if live_neighbors < 2 || live_neighbors > 3
+        new_grid.cells.delete cell
+      elsif live_neighbors == 3
+        new_grid.add_cell(cell[:x], cell[:y])
+      end
+    end
     new_grid
+  end
+
+  def next2
+    new_cells = cells.dup
+    checklist = cells.dup
+    cells.each do |cell|
+      checklist += neighbors(cell[:x], cell[:y])
+    end
+
+    puts("checklist size: #{checklist.length}")
+    checklist.each do |cell|
+      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
+      if live_neighbors < 2 || live_neighbors > 3
+        new_cells.delete cell
+      elsif live_neighbors == 3
+        new_cells.add({ x: cell[:x], y: cell[:y] })
+      end
+    end
+    @cells = new_cells
   end
 
   def count_live_neighbors(x, y)
@@ -96,12 +111,10 @@ class Game < Gosu::Window
       @dead_cells = []
       @height.times do |y|
         @width.times do |x|
-          if @grid.cells.include?({ x: x, y: y })
-            @alive_cells.append({ x: x, y: y })
-          end
+          @alive_cells.append({ x: x, y: y }) if @grid.cells.include?({ x: x, y: y })
         end
       end
-      @grid = @grid.next
+      @grid.next2
     end
   end
 
