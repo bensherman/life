@@ -14,6 +14,10 @@ class Grid
     @cells.add({ x: x, y: y })
   end
 
+  def delete_cell(x, y)
+    @cells.delete({ x: x, y: y })
+  end
+
   def neighbors(x, y)
     Set[
       { x: x + 1, y: y + 1 }, # northeast
@@ -74,6 +78,14 @@ class Game < Gosu::Window
   end
 
   def update
+    if @deleting
+      puts(mouse_x, mouse_y)
+      pixel_x = mouse_x.to_i / @pixel_size
+      pixel_y = mouse_y.to_i / @pixel_size
+      @grid.delete_cell pixel_x, pixel_y
+      puts("adding cell at #{pixel_x} #{pixel_y}")
+      @alive_cells.delete({ x: pixel_x, y: pixel_y })
+    end
     if @adding
       puts(mouse_x, mouse_y)
       pixel_x = mouse_x.to_i / @pixel_size
@@ -82,14 +94,14 @@ class Game < Gosu::Window
       puts("adding cell at #{pixel_x} #{pixel_y}")
       @alive_cells.append({ x: pixel_x, y: pixel_y })
     end
-    unless @paused || @mouse_paused
-      @alive_cells = []
-      puts("cells: #{@grid.cells.length}")
-      @grid.cells.each do |c|
-        @alive_cells.append(c) if c[:x].positive? && c[:x] < @width && c[:y].positive? && c[:y] < @height
-      end
-      @grid.next
+    return if @paused || @mouse_paused
+
+    @alive_cells = []
+    puts("cells: #{@grid.cells.length}")
+    @grid.cells.each do |c|
+      @alive_cells.append(c) if c[:x].positive? && c[:x] < @width && c[:y].positive? && c[:y] < @height
     end
+    @grid.next
   end
 
   def draw
@@ -105,15 +117,24 @@ class Game < Gosu::Window
       @paused = !@paused
     when Gosu::MS_LEFT
       @mouse_paused = true
-      @adding = true
+      if @shift
+        @deleting = true
+      else
+        @adding = true
+      end
+    when Gosu::KB_LEFT_SHIFT
+      @shift = true
     end
   end
 
-  def button_up(id)
+  def  button_up(id)
     case id
     when Gosu::MS_LEFT
       @adding = false
+      @deleting = false
       @mouse_paused = false
+    when Gosu::KB_LEFT_SHIFT
+      @shift = false
     end
   end
 end
