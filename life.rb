@@ -56,10 +56,10 @@ end
 
 class Game < Gosu::Window
   def initialize
-    @pixel_size = 10
-    @height = 100
-    @width = 100
-    super @width * @pixel_size, @height * @pixel_size, @options = { update_interval: 10 }
+    @cell_size = 20
+    @height = 60
+    @width = 60
+    super @width * @cell_size, @height * @cell_size, @options = { update_interval: 100 }
     self.caption = "Life"
     @grid = Grid.new
     @grid.add_cell(0, 0)
@@ -71,11 +71,11 @@ class Game < Gosu::Window
       @grid.add_cell(rand(@width), rand(@height))
     end
 
-    @alive = Gosu::Image.new(circle(@pixel_size))
+    @alive = Gosu::Image.new(circle(@cell_size))
   end
 
   def circle(diameter, color = 'green', opacity = 1, bg = 'black')
-    r = diameter / 2
+    r = diameter / 2 - 1
     image = Magick::Image.new(diameter, diameter, Magick::SolidFill.new(bg))
     c = Magick::Draw.new
     c.fill_opacity opacity
@@ -88,19 +88,19 @@ class Game < Gosu::Window
   def update
     if @deleting
       puts(mouse_x, mouse_y)
-      pixel_x = mouse_x.to_i / @pixel_size
-      pixel_y = mouse_y.to_i / @pixel_size
-      @grid.delete_cell pixel_x, pixel_y
-      puts("adding cell at #{pixel_x} #{pixel_y}")
-      @alive_cells.delete({ x: pixel_x, y: pixel_y })
+      cell_x = mouse_x.to_i / @cell_size
+      cell_y = mouse_y.to_i / @cell_size
+      @grid.delete_cell cell_x, cell_y
+      puts("adding cell at #{cell_x} #{cell_y}")
+      @alive_cells.delete({ x: cell_x, y: cell_y })
     end
     if @adding
       puts(mouse_x, mouse_y)
-      pixel_x = mouse_x.to_i / @pixel_size
-      pixel_y = mouse_y.to_i / @pixel_size
-      @grid.add_cell pixel_x, pixel_y
-      puts("adding cell at #{pixel_x} #{pixel_y}")
-      @alive_cells.append({ x: pixel_x, y: pixel_y })
+      cell_x = mouse_x.to_i / @cell_size
+      cell_y = mouse_y.to_i / @cell_size
+      @grid.add_cell cell_x, cell_y
+      puts("adding cell at #{cell_x} #{cell_y}")
+      @alive_cells.append({ x: cell_x, y: cell_y })
     end
     return if @paused || @mouse_paused
 
@@ -115,7 +115,7 @@ class Game < Gosu::Window
   def draw
     puts("alive pixels: #{@alive_cells.length}")
     @alive_cells.each do |c|
-      @alive.draw(c[:x] * @pixel_size, c[:y] * @pixel_size)
+      @alive.draw(c[:x] * @cell_size, c[:y] * @cell_size)
     end
   end
 
