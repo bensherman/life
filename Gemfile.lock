@@ -2,12 +2,14 @@ GEM
   remote: https://rubygems.org/
   specs:
     gosu (1.2.0)
+    rmagick (4.2.2)
 
 PLATFORMS
   x86_64-darwin-20
 
 DEPENDENCIES
   gosu
+  rmagick
 
 BUNDLED WITH
    2.2.15

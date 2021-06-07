@@ -1,8 +1,7 @@
-require "byebug"
 require "set"
-require "gosu"
-require "benchmark"
 
+require "gosu"
+require "rmagick"
 class Grid
   attr_accessor :cells
 
@@ -72,9 +71,18 @@ class Game < Gosu::Window
       @grid.add_cell(rand(@width), rand(@height))
     end
 
-    @alive = record(@pixel_size, @pixel_size) do
-      draw_rect(0, 0, @pixel_size, @pixel_size, Gosu::Color::WHITE)
-    end
+    @alive = Gosu::Image.new(circle(@pixel_size))
+  end
+
+  def circle(diameter, color = 'green', opacity = 1, bg = 'black')
+    r = diameter / 2
+    image = Magick::Image.new(diameter, diameter, Magick::SolidFill.new(bg))
+    c = Magick::Draw.new
+    c.fill_opacity opacity
+    c.fill(color)
+    c.circle(r, r, 0, r)
+    c.draw(image)
+    image
   end
 
   def update
@@ -127,7 +135,7 @@ class Game < Gosu::Window
     end
   end
 
-  def  button_up(id)
+  def button_up(id)
     case id
     when Gosu::MS_LEFT
       @adding = false
