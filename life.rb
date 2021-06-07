@@ -6,7 +6,7 @@ class Grid
   attr_accessor :cells
 
   def initialize
-    @cells = Set[]
+    clear
   end
 
   def add_cell(x, y)
@@ -15,6 +15,10 @@ class Grid
 
   def delete_cell(x, y)
     @cells.delete({ x: x, y: y })
+  end
+
+  def clear
+    @cells = Set[]
   end
 
   def neighbors(x, y)
@@ -62,14 +66,7 @@ class Game < Gosu::Window
     super @width * @cell_size, @height * @cell_size, @options = { update_interval: 100 }
     self.caption = "Life"
     @grid = Grid.new
-    @grid.add_cell(0, 0)
-    @grid.add_cell(1, 0)
-    @grid.add_cell(2, 0)
-    @grid.add_cell(2, 10)
     @alive_cells = []
-    1000.times do
-      @grid.add_cell(rand(@width), rand(@height))
-    end
 
     @alive = Gosu::Image.new(circle(@cell_size))
   end
@@ -83,6 +80,15 @@ class Game < Gosu::Window
     c.circle(r, r, 0, r)
     c.draw(image)
     image
+  end
+
+  def random_fill
+    pixel_count = @width * @height
+    fill_percent = 10
+    fill_count = pixel_count / fill_percent
+    fill_count.times do
+      @grid.add_cell(rand(@width), rand(@height))
+    end
   end
 
   def update
@@ -132,6 +138,10 @@ class Game < Gosu::Window
       end
     when Gosu::KB_LEFT_SHIFT
       @shift = true
+    when Gosu::KB_F
+      random_fill
+    when Gosu::KB_C
+      @grid.clear
     end
   end
 
