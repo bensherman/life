@@ -1,7 +1,9 @@
 require "set"
-
 require "gosu"
 require "rmagick"
+require "benchmark"
+require "byebug"
+
 class Grid
   attr_accessor :cells
 
@@ -9,19 +11,21 @@ class Grid
     clear
   end
 
-  def add_cell(x, y)
-    @cells.add({ x: x, y: y })
+  def add_cell(cell)
+    @cells.add(cell)
   end
 
-  def delete_cell(x, y)
-    @cells.delete({ x: x, y: y })
+  def delete_cell(cell)
+    @cells.delete(cell)
   end
 
   def clear
     @cells = Set[]
   end
 
-  def neighbors(x, y)
+  def neighbors(cell)
+    x = cell[:x]
+    y = cell[:y]
     Set[
       { x: x + 1, y: y + 1 }, # northeast
       { x: x - 1, y: y - 1 }, # southwest
@@ -36,25 +40,29 @@ class Grid
 
   def next
     new_cells = cells.dup
-    checklist = cells.dup
-    cells.each do |cell|
-      checklist += neighbors(cell[:x], cell[:y])
-    end
+    checked = Set[]
 
-    puts("checklist size: #{checklist.length}")
-    checklist.each do |cell|
-      live_neighbors = count_live_neighbors(cell[:x], cell[:y])
-      if live_neighbors < 2 || live_neighbors > 3
-        new_cells.delete cell
-      elsif live_neighbors == 3
-        new_cells.add({ x: cell[:x], y: cell[:y] })
-      end
-    end
+    puts Benchmark.measure {
+           cells.each do |cell|
+             checks = Set[cell] + neighbors(cell)
+
+             checks.each do |c|
+               next if checked.include? c
+
+               live_neighbors = count_live_neighbors c
+               if live_neighbors < 2 || live_neighbors > 3
+                 new_cells.delete c
+               elsif live_neighbors == 3
+                 new_cells.add c
+               end
+             end
+           end
+         }
     @cells = new_cells
   end
 
-  def count_live_neighbors(x, y)
-    (@cells & neighbors(x, y)).length
+  def count_live_neighbors(cell)
+    (@cells & neighbors(cell)).length
   end
 end
 
@@ -63,15 +71,15 @@ class Game < Gosu::Window
     @cell_size = 20
     @height = 60
     @width = 60
-    super @width * @cell_size, @height * @cell_size, @options = { update_interval: 100 }
+    super @width * @cell_size, @height * @cell_size, @options = { update_interval: 200 }
     self.caption = "Life"
     @grid = Grid.new
+    @grid.add_cell({ x: 10, y: 10 })
     @alive_cells = []
-
     @alive = Gosu::Image.new(circle(@cell_size))
   end
 
-  def circle(diameter, color = 'green', opacity = 1, bg = 'black')
+  def circle(diameter, color = "green", opacity = 1, bg = "black")
     r = diameter / 2 - 1
     image = Magick::Image.new(diameter, diameter, Magick::SolidFill.new(bg))
     c = Magick::Draw.new
@@ -87,7 +95,7 @@ class Game < Gosu::Window
     fill_percent = 10
     fill_count = pixel_count / fill_percent
     fill_count.times do
-      @grid.add_cell(rand(@width), rand(@height))
+      @grid.add_cell({ x: rand(@width), y: rand(@height) })
     end
   end
 
@@ -104,7 +112,7 @@ class Game < Gosu::Window
       puts(mouse_x, mouse_y)
       cell_x = mouse_x.to_i / @cell_size
       cell_y = mouse_y.to_i / @cell_size
-      @grid.add_cell cell_x, cell_y
+      @grid.add_cell({ x: cell_x, y: cell_y })
       puts("adding cell at #{cell_x} #{cell_y}")
       @alive_cells.append({ x: cell_x, y: cell_y })
     end
