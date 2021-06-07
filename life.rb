@@ -5,10 +5,11 @@ require "benchmark"
 require "byebug"
 
 class Grid
-  attr_accessor :cells
+  attr_accessor :cells, :timestamp
 
   def initialize
     clear
+    @timestamp = 0
   end
 
   def add_cell(cell)
@@ -72,9 +73,11 @@ class Game < Gosu::Window
     super @width * @cell_size, @height * @cell_size
     self.caption = "Life"
     @grid = Grid.new
-    @grid.add_cell({ x: 10, y: 10 })
+    @grid.timestamp = 0
     @alive_cells = []
     @alive = Gosu::Image.new(circle(@cell_size))
+    @step_time = 0
+    @step_time_shift_ms = 25
   end
 
   def circle(diameter, color = "green", opacity = 1, bg = "black")
@@ -88,6 +91,26 @@ class Game < Gosu::Window
     image
   end
 
+  def speedup
+    if (@step_time -= @step_time_shift_ms).negative?
+      @step_time = 0
+    else
+      @step_time -= @step_time_shift_ms
+    end
+  end
+
+  def slowdown
+    @step_time += @step_time_shift_ms
+  end
+
+  def info
+    puts "step_time: #{@step_time}"
+    puts "mouse_x, mouse_y: #{mouse_x}, #{mouse_y}"
+    puts "cells: #{@grid.cells.length}"
+    puts "displayed: #{@alive_cells.length}"
+    puts "fps: #{Gosu.fps}"
+  end
+
   def random_fill
     pixel_count = @width * @height
     fill_percent = 10
@@ -99,34 +122,35 @@ class Game < Gosu::Window
 
   def update
     if @deleting
-      puts(mouse_x, mouse_y)
       cell_x = mouse_x.to_i / @cell_size
       cell_y = mouse_y.to_i / @cell_size
       @grid.delete_cell({ x: cell_x, y: cell_y })
-      puts("adding cell at #{cell_x} #{cell_y}")
       @alive_cells.delete({ x: cell_x, y: cell_y })
     end
+
     if @adding
-      puts(mouse_x, mouse_y)
       cell_x = mouse_x.to_i / @cell_size
       cell_y = mouse_y.to_i / @cell_size
       @grid.add_cell({ x: cell_x, y: cell_y })
-      puts("adding cell at #{cell_x} #{cell_y}")
       @alive_cells.append({ x: cell_x, y: cell_y })
     end
 
     @alive_cells = []
-    puts("cells: #{@grid.cells.length}")
     @grid.cells.each do |c|
       @alive_cells.append(c) if c[:x].positive? && c[:x] < @width && c[:y].positive? && c[:y] < @height
     end
+
     return if @paused || @mouse_paused
 
-    @grid.next
+    if Gosu.milliseconds - @grid.timestamp > @step_time
+      @grid.next
+      @grid.timestamp = Gosu.milliseconds
+    end
+
+    info if @print_info
   end
 
   def draw
-    puts("alive pixels: #{@alive_cells.length}")
     @alive_cells.each do |c|
       @alive.draw(c[:x] * @cell_size, c[:y] * @cell_size)
     end
@@ -149,6 +173,12 @@ class Game < Gosu::Window
       random_fill
     when Gosu::KB_C
       @grid.clear
+    when Gosu::KB_NUMPAD_MINUS
+      slowdown
+    when Gosu::KB_NUMPAD_PLUS
+      speedup
+    when Gosu::KB_I
+      @print_info = !@print_info
     end
   end
 
