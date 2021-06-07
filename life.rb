@@ -42,22 +42,20 @@ class Grid
     new_cells = cells.dup
     checked = Set[]
 
-    puts Benchmark.measure {
-           cells.each do |cell|
-             checks = Set[cell] + neighbors(cell)
+    cells.each do |cell|
+      checks = Set[cell] + neighbors(cell)
 
-             checks.each do |c|
-               next if checked.include? c
+      checks.each do |c|
+        next if checked.include? c
 
-               live_neighbors = count_live_neighbors c
-               if live_neighbors < 2 || live_neighbors > 3
-                 new_cells.delete c
-               elsif live_neighbors == 3
-                 new_cells.add c
-               end
-             end
-           end
-         }
+        live_neighbors = count_live_neighbors c
+        if live_neighbors < 2 || live_neighbors > 3
+          new_cells.delete c
+        elsif live_neighbors == 3
+          new_cells.add c
+        end
+      end
+    end
     @cells = new_cells
   end
 
@@ -71,7 +69,7 @@ class Game < Gosu::Window
     @cell_size = 20
     @height = 60
     @width = 60
-    super @width * @cell_size, @height * @cell_size, @options = { update_interval: 200 }
+    super @width * @cell_size, @height * @cell_size
     self.caption = "Life"
     @grid = Grid.new
     @grid.add_cell({ x: 10, y: 10 })
@@ -104,7 +102,7 @@ class Game < Gosu::Window
       puts(mouse_x, mouse_y)
       cell_x = mouse_x.to_i / @cell_size
       cell_y = mouse_y.to_i / @cell_size
-      @grid.delete_cell cell_x, cell_y
+      @grid.delete_cell({ x: cell_x, y: cell_y })
       puts("adding cell at #{cell_x} #{cell_y}")
       @alive_cells.delete({ x: cell_x, y: cell_y })
     end
@@ -116,13 +114,14 @@ class Game < Gosu::Window
       puts("adding cell at #{cell_x} #{cell_y}")
       @alive_cells.append({ x: cell_x, y: cell_y })
     end
-    return if @paused || @mouse_paused
 
     @alive_cells = []
     puts("cells: #{@grid.cells.length}")
     @grid.cells.each do |c|
       @alive_cells.append(c) if c[:x].positive? && c[:x] < @width && c[:y].positive? && c[:y] < @height
     end
+    return if @paused || @mouse_paused
+
     @grid.next
   end
 
