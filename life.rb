@@ -24,6 +24,11 @@ class Grid
     @cells = Set[]
   end
 
+  def reset
+    clear
+    @offset = {x: 0, y: 0}
+  end
+
   def neighbors(cell)
     x = cell[:x]
     y = cell[:y]
@@ -78,6 +83,8 @@ class Game < Gosu::Window
     @alive = Gosu::Image.new(circle(@cell_size))
     @step_time = 0
     @step_time_shift_ms = 25
+    @offset = { x: 0, y: 0 }
+    @print_info = true
   end
 
   def circle(diameter, color = "green", opacity = 1, bg = "black")
@@ -106,6 +113,8 @@ class Game < Gosu::Window
   def info
     puts "step_time: #{@step_time}"
     puts "mouse_x, mouse_y: #{mouse_x}, #{mouse_y}"
+    puts "offset: #{@offset}"
+    puts "moving_coords: #{@moving_coords}"
     puts "cells: #{@grid.cells.length}"
     puts "displayed: #{@alive_cells.length}"
     puts "fps: #{Gosu.fps}"
@@ -122,37 +131,50 @@ class Game < Gosu::Window
 
   def update
     if @deleting
-      cell_x = mouse_x.to_i / @cell_size
-      cell_y = mouse_y.to_i / @cell_size
+      cell_x = (mouse_x / @cell_size).to_i + @offset[:x]
+      cell_y = (mouse_y / @cell_size).to_i + @offset[:y]
       @grid.delete_cell({ x: cell_x, y: cell_y })
       @alive_cells.delete({ x: cell_x, y: cell_y })
     end
 
     if @adding
-      cell_x = mouse_x.to_i / @cell_size
-      cell_y = mouse_y.to_i / @cell_size
+      cell_x = (mouse_x / @cell_size).to_i + @offset[:x]
+      cell_y = (mouse_y / @cell_size).to_i + @offset[:y]
       @grid.add_cell({ x: cell_x, y: cell_y })
       @alive_cells.append({ x: cell_x, y: cell_y })
     end
 
     @alive_cells = []
-    @grid.cells.each do |c|
-      @alive_cells.append(c) if c[:x].positive? && c[:x] < @width && c[:y].positive? && c[:y] < @height
+    @grid.cells.each do |cell|
+      @alive_cells.append(cell) if in_view? cell
     end
-
+    info if @print_info
+    set_offset if @moving
     return if @paused || @mouse_paused
 
     if Gosu.milliseconds - @grid.timestamp > @step_time
       @grid.next
       @grid.timestamp = Gosu.milliseconds
     end
+  end
 
-    info if @print_info
+  def in_view?(cell)
+    (
+      cell[:x] > @offset[:x] &&
+      cell[:x] < @offset[:x] + @width &&
+      cell[:y] > @offset[:y] &&
+      cell[:y] < @offset[:y] + @height
+    )
+  end
+
+  def set_offset
+    @offset[:x] = (@moving_coords[:x] - (mouse_x / @cell_size)).to_i
+    @offset[:y] = (@moving_coords[:y] - (mouse_y / @cell_size)).to_i
   end
 
   def draw
     @alive_cells.each do |c|
-      @alive.draw(c[:x] * @cell_size, c[:y] * @cell_size)
+      @alive.draw((c[:x] - @offset[:x]) * @cell_size, (c[:y] - @offset[:y]) * @cell_size)
     end
   end
 
@@ -171,14 +193,18 @@ class Game < Gosu::Window
       @shift = true
     when Gosu::KB_F
       random_fill
-    when Gosu::KB_C
-      @grid.clear
+    when Gosu::KB_R
+      @grid.reset
     when Gosu::KB_NUMPAD_MINUS
       slowdown
     when Gosu::KB_NUMPAD_PLUS
       speedup
     when Gosu::KB_I
       @print_info = !@print_info
+    when Gosu::MS_RIGHT
+      @mouse_paused = true
+      @moving = true
+      @moving_coords = { x: (mouse_x / @cell_size).to_i + @offset[:x], y: (mouse_y / @cell_size).to_i + @offset[:y] }
     end
   end
 
@@ -190,6 +216,9 @@ class Game < Gosu::Window
       @mouse_paused = false
     when Gosu::KB_LEFT_SHIFT
       @shift = false
+    when Gosu::MS_RIGHT
+      @mouse_paused = false
+      @moving = false
     end
   end
 end
