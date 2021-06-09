@@ -168,12 +168,12 @@ class Life < Gosu::Window
     end
     info if @print_info
     set_offset if @moving
-    return if @paused || @mouse_paused
 
-    if Gosu.milliseconds - @grid.timestamp > @step_time
-      @grid.next
-      @grid.timestamp = Gosu.milliseconds
-    end
+    return if @paused || @mouse_paused
+    return unless Gosu.milliseconds - @grid.timestamp > @step_time
+
+    @grid.next
+    @grid.timestamp = Gosu.milliseconds
   end
 
   def in_view?(cell)
@@ -221,7 +221,9 @@ class Life < Gosu::Window
     when Gosu::KB_F
       random_fill
     when Gosu::KB_R
-      initialize
+      setup
+    when Gosu::KB_S
+      @grid.next
     when Gosu::KB_NUMPAD_MINUS
       slowdown
     when Gosu::KB_NUMPAD_PLUS
