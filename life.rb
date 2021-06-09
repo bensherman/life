@@ -1,8 +1,8 @@
+#!/usr/bin/env ruby
+
 require "set"
 require "gosu"
 require "rmagick"
-require "benchmark"
-require "byebug"
 
 class Grid
   attr_accessor :cells, :timestamp
