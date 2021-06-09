@@ -112,6 +112,8 @@ class Life < Gosu::Window
   def info
     puts "step_time: #{@step_time}"
     puts "mouse_x, mouse_y: #{mouse_x}, #{mouse_y}"
+    puts "mouse_location (relative): #{mouse_location}"
+    puts "alive? #{alive?}"
     puts "offset: #{@offset}"
     puts "moving_coords: #{@moving_coords}"
     puts "cells: #{@grid.cells.length}"
@@ -138,6 +140,7 @@ class Life < Gosu::Window
 
   def shrink
     return unless @cell_size > 2
+
     @cell_size -= 1
     @alive_image = cell_image
     @width = (width / @cell_size).to_i
@@ -193,13 +196,22 @@ class Life < Gosu::Window
     end
   end
 
+  def alive?
+    @grid.cells.include? mouse_location
+  end
+
+  def mouse_location
+    { x: (mouse_x / @cell_size).to_i + @offset[:x],
+      y: (mouse_y / @cell_size).to_i + @offset[:y] }
+  end
+
   def button_down(id)
     case id
     when Gosu::KB_SPACE
       @paused = !@paused
     when Gosu::MS_LEFT
       @mouse_paused = true
-      if @shift
+      if alive?
         @deleting = true
       else
         @adding = true
