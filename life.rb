@@ -83,17 +83,17 @@ class Life < Gosu::Window
   end
 
   def cell_image(color = "green", opacity = 1, bg = "black")
-    r = @cell_size / 2
+    radius = @cell_size / 2
     image = Magick::Image.new(@cell_size, @cell_size, Magick::SolidFill.new(bg))
-    c = Magick::Draw.new
-    c.fill_opacity opacity
-    c.fill(color)
+    drawing = Magick::Draw.new
+    drawing.fill_opacity opacity
+    drawing.fill(color)
     if @cell_size > 3
-      c.circle(r, r, 1, r)
+      drawing.circle(radius, radius, 1, radius)
     else
-      c.rectangle(0, 0, @cell_size, @cell_size)
+      drawing.rectangle(0, 0, @cell_size, @cell_size)
     end
-    c.draw(image)
+    drawing.draw(image)
     Gosu::Image.new(image)
   end
 
