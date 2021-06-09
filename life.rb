@@ -8,7 +8,7 @@ class Grid
   attr_accessor :cells, :timestamp
 
   def initialize
-    clear
+    @cells = Set[]
     @timestamp = 0
   end
 
@@ -18,15 +18,6 @@ class Grid
 
   def delete_cell(cell)
     @cells.delete(cell)
-  end
-
-  def clear
-    @cells = Set[]
-  end
-
-  def reset
-    clear
-    @offset = {x: 0, y: 0}
   end
 
   def neighbors(cell)
@@ -70,32 +61,40 @@ class Grid
   end
 end
 
-class Game < Gosu::Window
+class Life < Gosu::Window
   def initialize
-    @cell_size = 20
-    @height = 60
-    @width = 60
+    setup
     super @width * @cell_size, @height * @cell_size
     self.caption = "Life"
+  end
+
+  def setup
+    @height = 50
+    @width = 50
+    @cell_size = 20
     @grid = Grid.new
     @grid.timestamp = 0
     @alive_cells = []
-    @alive = Gosu::Image.new(circle(@cell_size))
+    @alive_image = cell_image
     @step_time = 0
     @step_time_shift_ms = 25
     @offset = { x: 0, y: 0 }
     @print_info = true
   end
 
-  def circle(diameter, color = "green", opacity = 1, bg = "black")
-    r = diameter / 2 - 1
-    image = Magick::Image.new(diameter, diameter, Magick::SolidFill.new(bg))
+  def cell_image(color = "green", opacity = 1, bg = "black")
+    r = @cell_size / 2
+    image = Magick::Image.new(@cell_size, @cell_size, Magick::SolidFill.new(bg))
     c = Magick::Draw.new
     c.fill_opacity opacity
     c.fill(color)
-    c.circle(r, r, 0, r)
+    if @cell_size > 3
+      c.circle(r, r, 1, r)
+    else
+      c.rectangle(0, 0, @cell_size, @cell_size)
+    end
     c.draw(image)
-    image
+    Gosu::Image.new(image)
   end
 
   def speedup
@@ -116,6 +115,7 @@ class Game < Gosu::Window
     puts "offset: #{@offset}"
     puts "moving_coords: #{@moving_coords}"
     puts "cells: #{@grid.cells.length}"
+    puts "cell_size: #{@cell_size}"
     puts "displayed: #{@alive_cells.length}"
     puts "fps: #{Gosu.fps}"
   end
@@ -125,8 +125,23 @@ class Game < Gosu::Window
     fill_percent = 10
     fill_count = pixel_count / fill_percent
     fill_count.times do
-      @grid.add_cell({ x: rand(@width), y: rand(@height) })
+      @grid.add_cell({ x: rand(@width) + @offset[:x], y: rand(@height) + @offset[:y] })
     end
+  end
+
+  def grow
+    @cell_size += 1
+    @alive_image = cell_image
+    @width = (width / @cell_size).to_i
+    @height = (height / @cell_size).to_i
+  end
+
+  def shrink
+    return unless @cell_size > 2
+    @cell_size -= 1
+    @alive_image = cell_image
+    @width = (width / @cell_size).to_i
+    @height = (height / @cell_size).to_i
   end
 
   def update
@@ -160,9 +175,9 @@ class Game < Gosu::Window
 
   def in_view?(cell)
     (
-      cell[:x] > @offset[:x] &&
+      cell[:x] >= @offset[:x] &&
       cell[:x] < @offset[:x] + @width &&
-      cell[:y] > @offset[:y] &&
+      cell[:y] >= @offset[:y] &&
       cell[:y] < @offset[:y] + @height
     )
   end
@@ -174,7 +189,7 @@ class Game < Gosu::Window
 
   def draw
     @alive_cells.each do |c|
-      @alive.draw((c[:x] - @offset[:x]) * @cell_size, (c[:y] - @offset[:y]) * @cell_size)
+      @alive_image.draw((c[:x] - @offset[:x]) * @cell_size, (c[:y] - @offset[:y]) * @cell_size)
     end
   end
 
@@ -194,7 +209,7 @@ class Game < Gosu::Window
     when Gosu::KB_F
       random_fill
     when Gosu::KB_R
-      @grid.reset
+      initialize
     when Gosu::KB_NUMPAD_MINUS
       slowdown
     when Gosu::KB_NUMPAD_PLUS
@@ -205,6 +220,10 @@ class Game < Gosu::Window
       @mouse_paused = true
       @moving = true
       @moving_coords = { x: (mouse_x / @cell_size).to_i + @offset[:x], y: (mouse_y / @cell_size).to_i + @offset[:y] }
+    when Gosu::MS_WHEEL_UP
+      grow
+    when Gosu::MS_WHEEL_DOWN
+      shrink
     end
   end
 
@@ -223,4 +242,4 @@ class Game < Gosu::Window
   end
 end
 
-Game.new.show if __FILE__ == $0
+Life.new.show if __FILE__ == $0
