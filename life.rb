@@ -149,17 +149,13 @@ class Life < Gosu::Window
 
   def update
     if @deleting
-      cell_x = (mouse_x / @cell_size).to_i + @offset[:x]
-      cell_y = (mouse_y / @cell_size).to_i + @offset[:y]
-      @grid.delete_cell({ x: cell_x, y: cell_y })
-      @alive_cells.delete({ x: cell_x, y: cell_y })
+      @grid.delete_cell mouse_location
+      @alive_cells.delete(mouse_location)
     end
 
     if @adding
-      cell_x = (mouse_x / @cell_size).to_i + @offset[:x]
-      cell_y = (mouse_y / @cell_size).to_i + @offset[:y]
-      @grid.add_cell({ x: cell_x, y: cell_y })
-      @alive_cells.append({ x: cell_x, y: cell_y })
+      @grid.add_cell(mouse_location)
+      @alive_cells.append(mouse_location)
     end
 
     @alive_cells = []
@@ -233,7 +229,7 @@ class Life < Gosu::Window
     when Gosu::MS_RIGHT
       @mouse_paused = true
       @moving = true
-      @moving_coords = { x: (mouse_x / @cell_size).to_i + @offset[:x], y: (mouse_y / @cell_size).to_i + @offset[:y] }
+      @moving_coords = mouse_location
     when Gosu::MS_WHEEL_UP
       grow
     when Gosu::MS_WHEEL_DOWN
