@@ -37,12 +37,9 @@ class Grid
 
   def next
     new_cells = Set[]
-    checked = Set[]
 
     cells.each do |cell|
-      checks = neighbors(cell) - checked
-
-      checks.each do |c|
+      neighbors(cell).each do |c|
         live_neighbors = count_live_neighbors c
         case live_neighbors
         when 2
