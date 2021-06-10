@@ -30,21 +30,25 @@ class Grid
   end
 
   def next
-    new_cells = {}
+    neighbor_tracker = Hash.new(0)
     cells.each_key do |cell|
       neighbors(cell).each do |neighbor|
-        new_cells[neighbor] = new_cells.fetch(neighbor, 0) + 1
+        neighbor_tracker[neighbor] += 1
       end
+      # this is a way to get the default set if it does not exist,
+      # but leave it alone if it does.
+      neighbor_tracker[cell] = neighbor_tracker[cell]
     end
 
-    new_cells.each do |cell, n|
-      if n < 2 || n > 3
-        new_cells.delete cell
-      elsif n == 2 && @cells[cell].nil?
-        new_cells.delete cell
+    neighbor_tracker.each do |cell, n|
+      case n
+      when 2
+        next
+      when 3
+        add_cell cell unless @cells[cell]
+      else
+        delete_cell cell
       end
     end
-
-    @cells = new_cells
   end
 end
