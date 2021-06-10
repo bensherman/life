@@ -3,64 +3,9 @@
 require "set"
 require "gosu"
 require "rmagick"
+require "byebug"
 
-class Grid
-  attr_accessor :cells, :timestamp
-
-  def initialize
-    @cells = Set[]
-    @timestamp = 0
-  end
-
-  def add_cell(cell)
-    @cells.add(cell)
-  end
-
-  def delete_cell(cell)
-    @cells.delete(cell)
-  end
-
-  def neighbors(cell)
-    x = cell[:x]
-    y = cell[:y]
-    Set[
-      { x: x + 1, y: y + 1 }, # northeast
-      { x: x - 1, y: y - 1 }, # southwest
-      { x: x + 1, y: y - 1 }, # southeast
-      { x: x - 1, y: y + 1 }, # northwest
-      { x: x + 1, y: y }, # east
-      { x: x, y: y + 1 }, # north
-      { x: x - 1, y: y }, # west
-      { x: x, y: y - 1 } # south
-    ]
-  end
-
-  def cell_has_pulse?(cell)
-    # check to see if this cell will be alive in the next iteration
-    live_neighbors = count_live_neighbors cell
-    case live_neighbors
-    when 2
-      return true if cells.include? cell
-    when 3
-      return true
-    end
-    false
-  end
-
-  def next
-    new_cells = Set[]
-    cells.each do |cell|
-      neighbors(cell).each do |neighbor|
-        new_cells.add neighbor if cell_has_pulse? neighbor
-      end
-    end
-    @cells = new_cells
-  end
-
-  def count_live_neighbors(cell)
-    (@cells & neighbors(cell)).length
-  end
-end
+require_relative "grid"
 
 class Life < Gosu::Window
   def initialize
@@ -160,7 +105,7 @@ class Life < Gosu::Window
     end
 
     @alive_cells = []
-    @grid.cells.each do |cell|
+    @grid.cells.each do |cell, _|
       @alive_cells.append(cell) if in_view? cell
     end
     info if @print_info
