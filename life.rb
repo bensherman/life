@@ -35,18 +35,23 @@ class Grid
     ]
   end
 
+  def cell_has_pulse?(cell)
+    # check to see if this cell will be alive in the next iteration
+    live_neighbors = count_live_neighbors cell
+    case live_neighbors
+    when 2
+      return true if cells.include? cell
+    when 3
+      return true
+    end
+    false
+  end
+
   def next
     new_cells = Set[]
-
     cells.each do |cell|
-      neighbors(cell).each do |c|
-        live_neighbors = count_live_neighbors c
-        case live_neighbors
-        when 2
-          new_cells.add c if cells.include? c
-        when 3
-          new_cells.add c
-        end
+      neighbors(cell).each do |neighbor|
+        new_cells.add neighbor if cell_has_pulse? neighbor
       end
     end
     @cells = new_cells
