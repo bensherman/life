@@ -98,11 +98,11 @@
   "system": {
     "macos": {
       "big_sur": {
-        "HOMEBREW_VERSION": "3.1.11",
+        "HOMEBREW_VERSION": "3.1.11-45-g33e71c9",
         "HOMEBREW_PREFIX": "/usr/local",
-        "Homebrew/homebrew-core": "1e66c0c73c545d0b565cebd831d962c71dd13af8",
-        "CLT": "11.3.0.32.62",
-        "Xcode": "11.7",
+        "Homebrew/homebrew-core": "4595e425ab14b407ef25f6baadbf78ed3fb315c8",
+        "CLT": "12.5.0.22.9",
+        "Xcode": "12.5",
         "macOS": "11.4"
       }
     }
