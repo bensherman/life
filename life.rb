@@ -203,6 +203,8 @@ class Life < Gosu::Window
 
   def button_down(id)
     case id
+    when Gosu::KB_LEFT_CONTROL && Gosu::KB_C
+      close!
     when Gosu::KB_SPACE
       @paused = !@paused
     when Gosu::MS_LEFT
