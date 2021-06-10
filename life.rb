@@ -36,19 +36,18 @@ class Grid
   end
 
   def next
-    new_cells = cells.dup
+    new_cells = Set[]
     checked = Set[]
 
     cells.each do |cell|
-      checks = Set[cell] + neighbors(cell)
+      checks = neighbors(cell) - checked
 
       checks.each do |c|
-        next if checked.include? c
-
         live_neighbors = count_live_neighbors c
-        if live_neighbors < 2 || live_neighbors > 3
-          new_cells.delete c
-        elsif live_neighbors == 3
+        case live_neighbors
+        when 2
+          new_cells.add c if cells.include? c
+        when 3
           new_cells.add c
         end
       end
@@ -203,21 +202,16 @@ class Life < Gosu::Window
 
   def button_down(id)
     case id
-    when Gosu::KB_LEFT_CONTROL && Gosu::KB_C
-      close!
     when Gosu::KB_SPACE
       @paused = !@paused
-    when Gosu::MS_LEFT
-      @mouse_paused = true
-      if alive?
-        @deleting = true
-      else
-        @adding = true
-      end
     when Gosu::KB_LEFT_SHIFT
       @shift = true
     when Gosu::KB_F
       random_fill
+    when Gosu::KB_I
+      @print_info = !@print_info
+    when Gosu::KB_Q
+      close!
     when Gosu::KB_R
       setup
     when Gosu::KB_S
@@ -226,12 +220,17 @@ class Life < Gosu::Window
       slowdown
     when Gosu::KB_NUMPAD_PLUS
       speedup
-    when Gosu::KB_I
-      @print_info = !@print_info
     when Gosu::MS_RIGHT
       @mouse_paused = true
       @moving = true
       @moving_coords = mouse_location
+    when Gosu::MS_LEFT
+      @mouse_paused = true
+      if alive?
+        @deleting = true
+      else
+        @adding = true
+      end
     when Gosu::MS_WHEEL_UP
       grow
     when Gosu::MS_WHEEL_DOWN
