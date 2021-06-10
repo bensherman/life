@@ -21,18 +21,6 @@ class Grid
     ]
   end
 
-  def cell_has_pulse?(cell)
-    # check to see if this cell will be alive in the next iteration
-    live_neighbors = count_live_neighbors cell
-    case live_neighbors
-    when 2
-      return true if cells.include? cell
-    when 3
-      return true
-    end
-    false
-  end
-
   def add_cell(cell)
     @cells[cell] = 0
   end
