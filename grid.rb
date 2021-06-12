@@ -27,7 +27,7 @@ class Grid
   end
 
   def delete_cell(cell)
-    dead[cell] = 10 if @cells[cell]
+    dead[cell] = 5 if @cells[cell]
     @cells.delete cell
   end
 

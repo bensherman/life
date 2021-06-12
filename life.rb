@@ -21,10 +21,11 @@ class Life < Gosu::Window
     @grid = Grid.new
     @grid.timestamp = 0
     @alive_cells = []
+    @cell_color = "green3"
     @alive_image = cell_image
     @dead_images = deaddeaddead
-    @step_time = 0
-    @step_time_shift_ms = 25
+    @step_time = 10
+    @step_time_shift_ms = 10
     @offset = { x: 0, y: 0 }
     @print_info = true
   end
@@ -32,12 +33,12 @@ class Life < Gosu::Window
   def deaddeaddead
     images = []
     (1..10).each do |opacity|
-      images << cell_image(color: "green", opacity: opacity/10.0)
+      images << cell_image(color: @cell_color, opacity: opacity/10.0)
     end
     images
   end
 
-  def cell_image(color: "green3", opacity: 1, bg: "black")
+  def cell_image(color: @cell_color, opacity: 1, bg: "black")
     radius = @cell_size / 2
     image = Magick::Image.new(@cell_size, @cell_size, Magick::SolidFill.new(bg))
     drawing = Magick::Draw.new
