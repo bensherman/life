@@ -1,8 +1,9 @@
 class Grid
-  attr_accessor :cells, :timestamp
+  attr_accessor :cells, :dead, :timestamp
 
   def initialize
     @cells = {}
+    @dead = {}
     @timestamp = 0
   end
 
@@ -22,10 +23,11 @@ class Grid
   end
 
   def add_cell(cell)
-    @cells[cell] = 0
+    cells[cell] = 0
   end
 
   def delete_cell(cell)
+    dead[cell] = 10 if @cells[cell]
     @cells.delete cell
   end
 
@@ -49,6 +51,15 @@ class Grid
       else
         delete_cell cell
       end
+    end
+
+    @dead.each_pair do |cell, time|
+      time -= 1
+      if time <= 0
+        @dead.delete cell
+        next
+      end
+      @dead[cell] = time
     end
   end
 end

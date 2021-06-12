@@ -22,13 +22,22 @@ class Life < Gosu::Window
     @grid.timestamp = 0
     @alive_cells = []
     @alive_image = cell_image
+    @dead_images = deaddeaddead
     @step_time = 0
     @step_time_shift_ms = 25
     @offset = { x: 0, y: 0 }
     @print_info = true
   end
 
-  def cell_image(color = "green", opacity = 1, bg = "black")
+  def deaddeaddead
+    images = []
+    (1..10).each do |opacity|
+      images << cell_image(color: "green", opacity: opacity/10.0)
+    end
+    images
+  end
+
+  def cell_image(color: "green3", opacity: 1, bg: "black")
     radius = @cell_size / 2
     image = Magick::Image.new(@cell_size, @cell_size, Magick::SolidFill.new(bg))
     drawing = Magick::Draw.new
@@ -80,15 +89,16 @@ class Life < Gosu::Window
   def grow
     @cell_size += 1
     @alive_image = cell_image
+    @dead_images = deaddeaddead
     @width = (width / @cell_size).to_i
     @height = (height / @cell_size).to_i
   end
 
   def shrink
     return unless @cell_size > 2
-
     @cell_size -= 1
     @alive_image = cell_image
+    @dead_images = deaddeaddead
     @width = (width / @cell_size).to_i
     @height = (height / @cell_size).to_i
   end
@@ -108,6 +118,12 @@ class Life < Gosu::Window
     @grid.cells.each do |cell, _|
       @alive_cells.append(cell) if in_view? cell
     end
+
+    @dead_cells = {}
+    @grid.dead.each do |cell, opacity|
+      @dead_cells[cell] = opacity if in_view? cell
+    end
+
     info if @print_info
     set_offset if @moving
 
@@ -133,6 +149,9 @@ class Life < Gosu::Window
   end
 
   def draw
+    @dead_cells.each do |cell, opacity|
+      @dead_images[opacity].draw((cell[:x] - @offset[:x]) * @cell_size, (cell[:y] - @offset[:y]) * @cell_size)
+    end
     @alive_cells.each do |c|
       @alive_image.draw((c[:x] - @offset[:x]) * @cell_size, (c[:y] - @offset[:y]) * @cell_size)
     end
