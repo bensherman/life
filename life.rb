@@ -33,7 +33,7 @@ class Life < Gosu::Window
   def deaddeaddead
     images = []
     (1..10).each do |opacity|
-      images << cell_image(color: @cell_color, opacity: opacity/10.0)
+      images << cell_image(color: @cell_color, opacity: opacity / 10.0)
     end
     images
   end
@@ -97,6 +97,7 @@ class Life < Gosu::Window
 
   def shrink
     return unless @cell_size > 2
+
     @cell_size -= 1
     @alive_image = cell_image
     @dead_images = deaddeaddead
@@ -121,8 +122,10 @@ class Life < Gosu::Window
     end
 
     @dead_cells = {}
-    @grid.dead.each do |cell, opacity|
-      @dead_cells[cell] = opacity if in_view? cell
+    if @afterglow
+      @grid.dead.each do |cell, opacity|
+        @dead_cells[cell] = opacity if in_view? cell
+      end
     end
 
     info if @print_info
@@ -173,6 +176,8 @@ class Life < Gosu::Window
       @paused = !@paused
     when Gosu::KB_LEFT_SHIFT
       @shift = true
+    when Gosu::KB_G
+      @afterglow = !@afterglow
     when Gosu::KB_F
       random_fill
     when Gosu::KB_I
@@ -183,9 +188,9 @@ class Life < Gosu::Window
       setup
     when Gosu::KB_S
       @grid.next
-    when Gosu::KB_NUMPAD_MINUS
+    when Gosu::KB_NUMPAD_MINUS, Gosu::KB_MINUS
       slowdown
-    when Gosu::KB_NUMPAD_PLUS
+    when Gosu::KB_NUMPAD_PLUS, Gosu::KB_EQUALS
       speedup
     when Gosu::MS_RIGHT
       @mouse_paused = true
