@@ -131,7 +131,7 @@ class Life < Gosu::Window
     end
 
     @alive_cells = []
-    @grid.cells.each do |cell, _|
+    @grid.cells.each_key do |cell|
       @alive_cells.append(cell) if in_view? cell
     end
 
