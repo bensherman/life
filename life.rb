@@ -12,7 +12,7 @@ class Life < Gosu::Window
     setup
     @height = 50
     @width = 50
-    super @width * @cell_size, @height * @cell_size, {resizable: true}
+    super @width * @cell_size, @height * @cell_size, { resizable: true }
     self.caption = "Life"
   end
 
