@@ -224,4 +224,3 @@ class Life < Gosu::Window
   end
 end
 
-Life.new.show if __FILE__ == $0
