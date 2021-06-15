@@ -4,7 +4,6 @@ class Grid
   def initialize
     @cells = {}
     @dead = {}
-    @timestamp = 0
   end
 
   def neighbors(cell)
