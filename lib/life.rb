@@ -88,7 +88,16 @@ class Life < Gosu::Window
   end
 
   def grow
+    # this keeps the sizes reasonable (minimum 20 cells wide and tall)
+    return unless @cell_size <= width / 20 || @cell_size <= height / 20
+
+    @moving_coords = mouse_location
+    old_offset = @offset
     @cell_size += 1
+    set_offset
+    @offset[:x] += (@offset[:x]  - old_offset[:x])
+    @offset[:y] += (@offset[:y]  - old_offset[:y])
+
     @alive_image = cell_image
     @dead_images = new_dead_images
   end
@@ -96,7 +105,13 @@ class Life < Gosu::Window
   def shrink
     return unless @cell_size > 2
 
+    @moving_coords = mouse_location
+    old_offset = @offset
     @cell_size -= 1
+    set_offset
+    @offset[:x] += (@offset[:x]  - old_offset[:x])
+    @offset[:y] += (@offset[:y]  - old_offset[:y])
+
     @alive_image = cell_image
     @dead_images = new_dead_images
   end
@@ -223,4 +238,3 @@ class Life < Gosu::Window
     end
   end
 end
-
