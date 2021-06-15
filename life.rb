@@ -10,13 +10,13 @@ require_relative "grid"
 class Life < Gosu::Window
   def initialize
     setup
-    super @width * @cell_size, @height * @cell_size
+    @height = 50
+    @width = 50
+    super @width * @cell_size, @height * @cell_size, {resizable: true}
     self.caption = "Life"
   end
 
   def setup
-    @height = 50
-    @width = 50
     @cell_size = 20
     @grid = Grid.new
     @grid.timestamp = 0
@@ -67,6 +67,8 @@ class Life < Gosu::Window
 
   def info
     puts "step_time: #{@step_time}"
+    puts "width, height: #{width}, #{height}"
+    puts "@width, @height: #{@width}, #{@height}"
     puts "mouse_x, mouse_y: #{mouse_x}, #{mouse_y}"
     puts "mouse_location (relative): #{mouse_location}"
     puts "alive? #{alive?}"
@@ -91,8 +93,6 @@ class Life < Gosu::Window
     @cell_size += 1
     @alive_image = cell_image
     @dead_images = deaddeaddead
-    @width = (width / @cell_size).to_i
-    @height = (height / @cell_size).to_i
   end
 
   def shrink
@@ -101,11 +101,12 @@ class Life < Gosu::Window
     @cell_size -= 1
     @alive_image = cell_image
     @dead_images = deaddeaddead
-    @width = (width / @cell_size).to_i
-    @height = (height / @cell_size).to_i
   end
 
   def update
+    @width = (width / @cell_size).to_i
+    @height = (height / @cell_size).to_i
+
     if @deleting
       @grid.delete_cell mouse_location
       @alive_cells.delete(mouse_location)
