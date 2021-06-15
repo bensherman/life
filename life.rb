@@ -23,19 +23,17 @@ class Life < Gosu::Window
     @alive_cells = []
     @cell_color = "green3"
     @alive_image = cell_image
-    @dead_images = deaddeaddead
+    @dead_images = new_dead_images
     @step_time = 10
     @step_time_shift_ms = 10
     @offset = { x: 0, y: 0 }
     @print_info = true
   end
 
-  def deaddeaddead
-    images = []
-    (1..10).each do |opacity|
-      images << cell_image(color: @cell_color, opacity: opacity / 10.0)
+  def new_dead_images
+    (1..10).collect do |opacity|
+      cell_image(color: @cell_color, opacity: opacity / 10.0)
     end
-    images
   end
 
   def cell_image(color: @cell_color, opacity: 1, bg: "black")
@@ -92,7 +90,7 @@ class Life < Gosu::Window
   def grow
     @cell_size += 1
     @alive_image = cell_image
-    @dead_images = deaddeaddead
+    @dead_images = new_dead_images
   end
 
   def shrink
@@ -100,7 +98,7 @@ class Life < Gosu::Window
 
     @cell_size -= 1
     @alive_image = cell_image
-    @dead_images = deaddeaddead
+    @dead_images = new_dead_images
   end
 
   def update
