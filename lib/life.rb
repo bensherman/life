@@ -5,6 +5,7 @@ require "gosu"
 require "rmagick"
 require "byebug"
 
+require_relative "rle"
 require_relative "grid"
 
 class Life < Gosu::Window
@@ -261,6 +262,27 @@ class Life < Gosu::Window
     when Gosu::MS_RIGHT
       @mouse_paused = false
       @moving = false
+    end
+  end
+
+  def drop(filename)
+    puts "dropping #{filename} on #{mouse_location}"
+    rle_import(filename, mouse_location)
+  end
+
+  def rle_import(filename, location)
+    begin
+      cells = RLE.new(filename).parse
+    rescue RLE::FileError => e
+      puts "Invalid RLE file #{filename}. #{e}"
+      return
+    end
+    offset_x = location[:x]
+    offset_y = location[:y]
+    cells.each do |cell|
+      cell[:x] += offset_x
+      cell[:y] += offset_y
+      @grid.add_cell(cell)
     end
   end
 end
