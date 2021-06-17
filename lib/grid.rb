@@ -4,6 +4,12 @@ class Grid
   def initialize
     @cells = {}
     @dead = {}
+    @track_dead = false
+  end
+
+  def track_dead_toggle
+    @track_dead = !@track_dead
+    @dead = {} unless @track_dead
   end
 
   def neighbors(cell)
@@ -26,7 +32,7 @@ class Grid
   end
 
   def delete_cell(cell)
-    dead[cell] = 5 if @cells[cell]
+    dead[cell] = 5 if @cells[cell] && @track_dead
     @cells.delete cell
   end
 
@@ -51,6 +57,8 @@ class Grid
         delete_cell cell
       end
     end
+
+    return unless @track_dead
 
     @dead.each_pair do |cell, time|
       time -= 1

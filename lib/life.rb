@@ -133,13 +133,7 @@ class Life < Gosu::Window
     end
 
     @alive_cells = @grid.cells.each_key.filter_map { |cell| cell if in_view? cell }
-
-    @dead_cells = {}
-    if @afterglow
-      @grid.dead.each do |cell, opacity|
-        @dead_cells[cell] = opacity if in_view? cell
-      end
-    end
+    @dead_cells = @grid.dead.each_pair.filter_map { |cell, opacity| [cell, opacity] if in_view? cell }.to_h
 
     info if @print_info
     set_offset if @moving
@@ -213,7 +207,7 @@ class Life < Gosu::Window
     when Gosu::KB_F
       random_fill
     when Gosu::KB_G
-      @afterglow = !@afterglow
+      @grid.track_dead_toggle
     when Gosu::KB_SLASH
       help if @shift
     when Gosu::KB_H
