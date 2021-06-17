@@ -189,10 +189,10 @@ class Life < Gosu::Window
       Scroll Wheel - Change visible size of cells
       Space - Pause
       - - Slow Down
-      = or + - Speed Up
+      + - Speed Up
       F - Fill visible
       G - Toggle "afterglow" effect
-      H or / - Toggle this help text
+      H or ? - Show this help text
       I - Show info on text window
       S - Move forward one step and pause
       Q - Quit
