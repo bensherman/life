@@ -130,10 +130,7 @@ class Life < Gosu::Window
       @alive_cells.append(mouse_location)
     end
 
-    @alive_cells = []
-    @grid.cells.each_key do |cell|
-      @alive_cells.append(cell) if in_view? cell
-    end
+    @alive_cells = @grid.cells.each_key.filter_map { |cell| cell if in_view? cell }
 
     @dead_cells = {}
     if @afterglow
