@@ -14,6 +14,7 @@ class Life < Gosu::Window
     @width = 50
     super @width * @cell_size, @height * @cell_size, { resizable: true }
     self.caption = "Life"
+    help
   end
 
   def setup
@@ -181,16 +182,41 @@ class Life < Gosu::Window
       y: (mouse_y / @cell_size).to_i + @offset[:y] }
   end
 
+  def helptext
+    <<~HELPTEXT
+      Click and Drag - Turn cells on and off
+      Second Button Click and Drag - Move visible cells
+      Scroll Wheel - Change visible size of cells
+      Space - Pause
+      - - Slow Down
+      = or + - Speed Up
+      F - Fill visible
+      G - Toggle "afterglow" effect
+      H or / - Toggle this help text
+      I - Show info on text window
+      S - Move forward one step and pause
+      Q - Quit
+    HELPTEXT
+  end
+
+  def help
+    puts helptext
+  end
+
   def button_down(id)
     case id
     when Gosu::KB_SPACE
       @paused = !@paused
     when Gosu::KB_LEFT_SHIFT
       @shift = true
-    when Gosu::KB_G
-      @afterglow = !@afterglow
     when Gosu::KB_F
       random_fill
+    when Gosu::KB_G
+      @afterglow = !@afterglow
+    when Gosu::KB_SLASH
+      help if @shift
+    when Gosu::KB_H
+      help
     when Gosu::KB_I
       @print_info = !@print_info
     when Gosu::KB_Q
@@ -198,10 +224,13 @@ class Life < Gosu::Window
     when Gosu::KB_R
       setup
     when Gosu::KB_S
+      @paused = true
       @grid.next
     when Gosu::KB_NUMPAD_MINUS, Gosu::KB_MINUS
       slowdown
-    when Gosu::KB_NUMPAD_PLUS, Gosu::KB_EQUALS
+    when Gosu::KB_EQUALS
+      speedup if @shift
+    when Gosu::KB_NUMPAD_PLUS
       speedup
     when Gosu::MS_RIGHT
       @mouse_paused = true
