@@ -27,11 +27,11 @@ class Life < Gosu::Window
     @step_time = 10
     @step_time_shift_ms = 10
     @offset = { x: 0, y: 0 }
-    @print_info = true
+    @print_info = false
   end
 
   def new_dead_images
-    (1..10).collect do |opacity|
+    (0..10).collect do |opacity|
       cell_image(color: @cell_color, opacity: opacity / 10.0)
     end
   end
