@@ -63,6 +63,8 @@ class RLE
         count = 0
       when "!"
         return @figure
+      when "\r", "\n"
+        next
       else
         raise InvalidData, "Invalid char in file: '#{char}'"
       end
