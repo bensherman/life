@@ -44,9 +44,10 @@ class Life < Gosu::Window
     drawing = Magick::Draw.new
     drawing.fill_opacity opacity
     drawing.fill(color)
-    if @cell_size > 2
+    if @cell_size > 4
       drawing.circle(radius, radius, 1, radius)
     else
+      drawing.stroke_antialias false
       drawing.rectangle(0, 0, @cell_size, @cell_size)
     end
     drawing.draw(image)
