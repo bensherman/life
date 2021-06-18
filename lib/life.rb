@@ -11,9 +11,9 @@ require_relative "grid"
 class Life < Gosu::Window
   def initialize
     setup
-    @height = 50
-    @width = 50
-    super @width * @cell_size, @height * @cell_size, { resizable: true }
+    @map_height = 50
+    @map_width = 50
+    super @map_width * @cell_size, @map_height * @cell_size, { resizable: true }
     self.caption = "Life"
     help
   end
@@ -39,12 +39,12 @@ class Life < Gosu::Window
   end
 
   def cell_image(color: @cell_color, opacity: 1, bg: "black")
-    radius = @cell_size / 2
+    radius = @cell_size / 2.0
     image = Magick::Image.new(@cell_size, @cell_size, Magick::SolidFill.new(bg))
     drawing = Magick::Draw.new
     drawing.fill_opacity opacity
     drawing.fill(color)
-    if @cell_size > 3
+    if @cell_size > 2
       drawing.circle(radius, radius, 1, radius)
     else
       drawing.rectangle(0, 0, @cell_size, @cell_size)
@@ -68,7 +68,7 @@ class Life < Gosu::Window
   def info
     puts "step_time: #{@step_time}"
     puts "width, height: #{width}, #{height}"
-    puts "@width, @height: #{@width}, #{@height}"
+    puts "@map_width, @map_height: #{@map_width}, #{@map_height}"
     puts "mouse_x, mouse_y: #{mouse_x}, #{mouse_y}"
     puts "mouse_location (relative): #{mouse_location}"
     puts "alive? #{alive?}"
@@ -81,11 +81,11 @@ class Life < Gosu::Window
   end
 
   def random_fill
-    pixel_count = @width * @height
+    pixel_count = @map_width * @map_height
     fill_percent = 10
     fill_count = pixel_count / fill_percent
     fill_count.times do
-      @grid.add_cell({ x: rand(@width) + @offset[:x], y: rand(@height) + @offset[:y] })
+      @grid.add_cell({ x: rand(@map_width) + @offset[:x], y: rand(@map_height) + @offset[:y] })
     end
   end
 
@@ -105,7 +105,7 @@ class Life < Gosu::Window
   end
 
   def shrink
-    return unless @cell_size > 2
+    return unless @cell_size > 1
 
     @moving_coords = mouse_location
     old_offset = @offset
@@ -119,8 +119,8 @@ class Life < Gosu::Window
   end
 
   def update
-    @width = (width / @cell_size).to_i
-    @height = (height / @cell_size).to_i
+    @map_width = (width / @cell_size).to_i
+    @map_height = (height / @cell_size).to_i
 
     if @deleting
       @grid.delete_cell mouse_location
@@ -148,9 +148,9 @@ class Life < Gosu::Window
   def in_view?(cell)
     (
       cell[:x] >= @offset[:x] &&
-      cell[:x] < @offset[:x] + @width &&
+      cell[:x] < @offset[:x] + @map_width &&
       cell[:y] >= @offset[:y] &&
-      cell[:y] < @offset[:y] + @height
+      cell[:y] < @offset[:y] + @map_height
     )
   end
 
